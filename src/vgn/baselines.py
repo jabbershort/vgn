@@ -1,9 +1,9 @@
 import time
 
-from gpd_ros.msg import GraspConfigList
+# from gpd_ros.msg import GraspConfigList
 import numpy as np
 from sensor_msgs.msg import PointCloud2
-import rospy
+# import rospy
 
 from vgn.grasp import Grasp
 from vgn.utils import ros_utils

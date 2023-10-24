@@ -7,10 +7,10 @@ from vgn.experiments import clutter_removal
 
 def main(args):
 
-    if args.rviz or str(args.model) == "gpd":
-        import rospy
+    # if args.rviz or str(args.model) == "gpd":
+    #     import rospy
 
-        rospy.init_node("sim_grasp", anonymous=True)
+    #     rospy.init_node("sim_grasp", anonymous=True)
 
     if str(args.model) == "gpd":
         from vgn.baselines import GPD
@@ -35,7 +35,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=Path, required=True)
+    parser.add_argument("--model", default="data/models/vgn_conv.pth" type=Path, required=True)
     parser.add_argument("--logdir", type=Path, default="data/experiments")
     parser.add_argument("--description", type=str, default="")
     parser.add_argument("--scene", type=str, choices=["pile", "packed"], default="pile")
