@@ -10,6 +10,29 @@ from vgn.utils.transform import Transform, Rotation
 from vgn.networks import load_network
 
 
+class VGN_Alt(object):
+    def __init__(self, model_path, rviz=False):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.net = load_network(model_path, self.device)
+        self.rviz = rviz
+
+    def __call__(self, tsdf_vol, voxel_size):
+
+        tic = time.time()
+        qual_vol, rot_vol, width_vol = predict(tsdf_vol, self.net, self.device)
+        qual_vol, rot_vol, width_vol = process(tsdf_vol, qual_vol, rot_vol, width_vol)
+        grasps, scores = select(qual_vol.copy(), rot_vol, width_vol)
+        toc = time.time() - tic
+
+        grasps, scores = np.asarray(grasps), np.asarray(scores)
+
+        if len(grasps) > 0:
+            p = np.random.permutation(len(grasps))
+            grasps = [from_voxel_coordinates(g, voxel_size) for g in grasps[p]]
+            scores = scores[p]
+
+        return grasps, scores, toc
+
 class VGN(object):
     def __init__(self, model_path, rviz=False):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
