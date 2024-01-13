@@ -23,7 +23,7 @@ class Dataset(torch.utils.data.Dataset):
         width = self.df.loc[i, "width"].astype(np.single)
         label = self.df.loc[i, "label"].astype(np.longlong)
         voxel_grid = read_voxel_grid(self.root, scene_id)
-
+        cloud = read_cloud(self.root,scene_id)
         if self.augment:
             voxel_grid, ori, pos = apply_transform(voxel_grid, ori, pos)
 
@@ -33,9 +33,9 @@ class Dataset(torch.utils.data.Dataset):
         rotations[0] = ori.as_quat()
         rotations[1] = (ori * R).as_quat()
 
-        x, y, index = voxel_grid, (label, rotations, width), index
+        scene, x, y, index = cloud, voxel_grid, (label, rotations, width), index
 
-        return x, y, index
+        return scene, x, y, index
 
 
 def apply_transform(voxel_grid, orientation, position):

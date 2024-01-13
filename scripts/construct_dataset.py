@@ -16,7 +16,9 @@ def main(args):
     (args.dataset / "scenes").mkdir(parents=True)
 
     # load setup information
-    size, intrinsic, _, finger_depth = read_setup(args.raw)
+    size, intrinsic, max_opening_width, finger_depth = read_setup(args.raw)
+    write_setup(args.dataset,size,intrinsic,max_opening_width,finger_depth)
+
     assert np.isclose(size, 6.0 * finger_depth)
     voxel_size = size / RESOLUTION
 
@@ -34,9 +36,11 @@ def main(args):
         if f.suffix != ".npz":
             continue
         depth_imgs, extrinsics = read_sensor_data(args.raw, f.stem)
+        # write_sensor_data_scene(args.dataset,f.stem,depth_imgs,extrinsics)
         tsdf = create_tsdf(size, RESOLUTION, depth_imgs, intrinsic, extrinsics)
         grid = tsdf.get_grid()
-        write_voxel_grid(args.dataset, f.stem, grid)
+        # write_voxel_grid(args.dataset, f.stem, grid)
+        write_combined(args.dataset, f.stem, depth_imgs, extrinsics, grid)
 
 
 if __name__ == "__main__":

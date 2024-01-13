@@ -34,11 +34,14 @@ def write_sensor_data(root, depth_imgs, extrinsics):
     np.savez_compressed(path, depth_imgs=depth_imgs, extrinsics=extrinsics)
     return scene_id
 
+def write_sensor_data_scene(root,scene_id,depth_imgs,extrinsics):
+    path = root / "scenes" / (scene_id + ".npz")
+    np.savez_compressed(path, depth_imgs=depth_imgs, extrinsics=extrinsics)
+    return scene_id
 
 def read_sensor_data(root, scene_id):
     data = np.load(root / "scenes" / (scene_id + ".npz"))
     return data["depth_imgs"], data["extrinsics"]
-
 
 def write_grasp(root, scene_id, grasp, label):
     # TODO concurrent writes could be an issue
@@ -76,11 +79,19 @@ def write_voxel_grid(root, scene_id, voxel_grid):
     path = root / "scenes" / (scene_id + ".npz")
     np.savez_compressed(path, grid=voxel_grid)
 
+def write_combined(root,scene_id,depth_imgs,extrinsics,voxel_grid):
+    path = root / "scenes" / (scene_id + ".npz")
+    np.savez_compressed(path, depth_imgs=depth_imgs, extrinsics=extrinsics, grid=voxel_grid)
 
 def read_voxel_grid(root, scene_id):
     path = root / "scenes" / (scene_id + ".npz")
     return np.load(path)["grid"]
 
+def read_cloud(root,scene_id):
+    size, intrinsic, _, _ = read_setup(root)
+    depth_imgs, extrinsics = read_sensor_data(root, scene_id)
+    tsdf = create_tsdf(size,40,depth_imgs,intrinsic,extrinsics)
+    return tsdf.get_cloud()
 
 def read_json(path):
     with path.open("r") as f:
