@@ -17,6 +17,39 @@ OBJECT_COUNT_LAMBDA = 4
 MAX_VIEWPOINT_COUNT = 6
 GRASPS_PER_SCENE = 120
 
+def generate_single(args,sim,finger_depth):
+        # generate heap
+    object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+    sim.reset(object_count)
+    sim.save_state()
+
+    # render synthetic depth images
+    n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
+    depth_imgs, extrinsics = render_images(sim, n)
+
+    # reconstrct point cloud using a subset of the images
+    tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
+    pc = tsdf.get_cloud()
+
+    # crop surface and borders from point cloud
+    bounding_box = o3d.geometry.AxisAignedBoundingBox(sim.lower, sim.upper)
+    pc = pc.crop(bounding_box)
+    # o3d.visualization.draw_geometries([pc])
+
+    if pc.is_empty():
+        print("Point cloud empty, skipping scene")
+        return
+
+    # store the raw data
+    scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
+
+    for _ in range(GRASPS_PER_SCENE):
+        # sample and evaluate a grasp point
+        point, normal = sample_grasp_point(pc, finger_depth)
+        grasp, label = evaluate_grasp_point(sim, point, normal)
+
+        # store the sample
+        write_grasp(args.root, scene_id, grasp, label)
 
 def main(args):
     sim = ClutterRemovalSim(args.scene, args.object_set, gui=args.sim_gui)
@@ -33,39 +66,40 @@ def main(args):
     )
 
     for _ in range(args.num_grasps // GRASPS_PER_SCENE):
-        # generate heap
-        object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
-        sim.reset(object_count)
-        sim.save_state()
+        generate_single(args,sim,finger_depth)
+        # # generate heap
+        # object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+        # sim.reset(object_count)
+        # sim.save_state()
 
-        # render synthetic depth images
-        n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
-        depth_imgs, extrinsics = render_images(sim, n)
+        # # render synthetic depth images
+        # n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
+        # depth_imgs, extrinsics = render_images(sim, n)
 
-        # reconstrct point cloud using a subset of the images
-        tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
-        pc = tsdf.get_cloud()
+        # # reconstrct point cloud using a subset of the images
+        # tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
+        # pc = tsdf.get_cloud()
 
-        # crop surface and borders from point cloud
-        bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
-        pc = pc.crop(bounding_box)
-        o3d.visualization.draw_geometries([pc])
+        # # crop surface and borders from point cloud
+        # bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
+        # pc = pc.crop(bounding_box)
+        # # o3d.visualization.draw_geometries([pc])
 
-        if pc.is_empty():
-            print("Point cloud empty, skipping scene")
-            continue
+        # if pc.is_empty():
+        #     print("Point cloud empty, skipping scene")
+        #     continue
 
-        # store the raw data
-        scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
+        # # store the raw data
+        # scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
 
-        for _ in range(GRASPS_PER_SCENE):
-            # sample and evaluate a grasp point
-            point, normal = sample_grasp_point(pc, finger_depth)
-            grasp, label = evaluate_grasp_point(sim, point, normal)
+        # for _ in range(GRASPS_PER_SCENE):
+        #     # sample and evaluate a grasp point
+        #     point, normal = sample_grasp_point(pc, finger_depth)
+        #     grasp, label = evaluate_grasp_point(sim, point, normal)
 
-            # store the sample
-            write_grasp(args.root, scene_id, grasp, label)
-            pbar.update()
+        #     # store the sample
+        #     write_grasp(args.root, scene_id, grasp, label)
+        pbar.update()
 
     pbar.close()
 
