@@ -42,7 +42,7 @@ def main(args):
         # write_voxel_grid(args.dataset, f.stem, grid)
         write_combined(args.dataset, f.stem, depth_imgs, extrinsics, grid)
 
-
+# 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("raw", type=Path)

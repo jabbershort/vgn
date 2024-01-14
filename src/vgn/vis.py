@@ -27,14 +27,18 @@ def draw_workspace(size):
     # pubs["workspace"].publish(msg)
 
 
-def draw_scene(tsdf,grasp,grasp_score, finger_depth, voxel_size=1, threshold=0.01):
-    if type(tsdf) != o3d.cuda.pybind.geometry.PointCloud:
-        cloud = generate_tsdf(tsdf,voxel_size,threshold)
-    else:
-        # TODO: this function doesn't work properly.
-        cloud = tsdf.scale(100,[0,0,0])
+def draw_scene(size,cloud,tsdf,grasp,grasp_score,finger_depth, voxel_size=1, threshold=0.01):
+    geom = []
+    if tsdf is not None:
+        grid = generate_tsdf(tsdf,voxel_size,threshold)
+        geom.append(grid)
+    if cloud is not None:   
+        # TODO: this cloud needs to be scaled by the size / resolution to maycj thr voxek grid of 0-40 in each dimension
+        cloud = cloud.scale(40/size,[0,0,0])
+        cloud.translate([0,0,2])
+        geom.append(cloud)
     grip = generate_grasp(grasp,grasp_score,finger_depth)
-    o3d.visualization.draw_geometries([cloud,grip])
+    o3d.visualization.draw_geometries([cloud,grid,grip])
     
 def generate_tsdf(vol, voxel_size, threshold=0.01):
     vol = vol.squeeze()

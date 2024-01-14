@@ -18,6 +18,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         scene_id = self.df.loc[i, "scene_id"]
+        size, _, _, _ = read_setup(self.root)
         ori = Rotation.from_quat(self.df.loc[i, "qx":"qw"].to_numpy(np.single))
         pos = self.df.loc[i, "i":"k"].to_numpy(np.single)
         width = self.df.loc[i, "width"].astype(np.single)
@@ -35,7 +36,7 @@ class Dataset(torch.utils.data.Dataset):
 
         scene, x, y, index = cloud, voxel_grid, (label, rotations, width), index
 
-        return scene, x, y, index
+        return size, scene, x, y, index
 
 
 def apply_transform(voxel_grid, orientation, position):

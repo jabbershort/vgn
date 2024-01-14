@@ -91,7 +91,7 @@ def read_cloud(root,scene_id):
     size, intrinsic, _, _ = read_setup(root)
     depth_imgs, extrinsics = read_sensor_data(root, scene_id)
     tsdf = create_tsdf(size,40,depth_imgs,intrinsic,extrinsics)
-    return tsdf.get_cloud()
+    return tsdf.get_mesh()
 
 def read_json(path):
     with path.open("r") as f:

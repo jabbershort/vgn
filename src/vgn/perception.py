@@ -113,6 +113,9 @@ class TSDFVolume(object):
             i, j, k = np.floor(point / self.voxel_size).astype(int)
             grid[0, i, j, k] = distances[idx]
         return grid
+    
+    def get_mesh(self):
+        return self._volume.extract_triangle_mesh()
 
     def get_cloud(self):
         return self._volume.extract_point_cloud()

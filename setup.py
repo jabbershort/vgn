@@ -1,12 +1,11 @@
 # ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD!
 
 from distutils.core import setup
+from setuptools import find_packages
 
-from catkin_pkg.python_setup import generate_distutils_setup
-
-# Fetch values from package.xml.
-setup_args = generate_distutils_setup(
-    packages=["vgn", "vgn.utils",], package_dir={"": "src"},
-)
-
-setup(**setup_args)
+setup(
+    name="vgn",
+    version='0.1.0',
+    packages=(find_packages(include=["vgn","vgn.*"])),
+    package_dir={"": "src"}
+    )

@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 
-from mpi4py import MPI
 import numpy as np
 import open3d as o3d
 import scipy.signal as signal
@@ -20,23 +19,20 @@ GRASPS_PER_SCENE = 120
 
 
 def main(args):
-    workers, rank = setup_mpi()
     sim = ClutterRemovalSim(args.scene, args.object_set, gui=args.sim_gui)
     finger_depth = sim.gripper.finger_depth
-    grasps_per_worker = args.num_grasps // workers
-    pbar = tqdm(total=grasps_per_worker, disable=rank != 0)
+    pbar = tqdm(total=args.num_grasps)
 
-    if rank == 0:
-        (args.root / "scenes").mkdir(parents=True, exist_ok=True)
-        write_setup(
-            args.root,
-            sim.size,
-            sim.camera.intrinsic,
-            sim.gripper.max_opening_width,
-            sim.gripper.finger_depth,
-        )
+    (args.root / "scenes").mkdir(parents=True, exist_ok=True)
+    write_setup(
+        args.root,
+        sim.size,
+        sim.camera.intrinsic,
+        sim.gripper.max_opening_width,
+        sim.gripper.finger_depth,
+    )
 
-    for _ in range(grasps_per_worker // GRASPS_PER_SCENE):
+    for _ in range(args.num_grasps // GRASPS_PER_SCENE):
         # generate heap
         object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
         sim.reset(object_count)
@@ -72,12 +68,6 @@ def main(args):
             pbar.update()
 
     pbar.close()
-
-
-def setup_mpi():
-    workers = MPI.COMM_WORLD.Get_size()
-    rank = MPI.COMM_WORLD.Get_rank()
-    return workers, rank
 
 
 def render_images(sim, n):
