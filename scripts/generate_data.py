@@ -32,7 +32,7 @@ def generate_single(args,sim,finger_depth):
     pc = tsdf.get_cloud()
 
     # crop surface and borders from point cloud
-    bounding_box = o3d.geometry.AxisAignedBoundingBox(sim.lower, sim.upper)
+    bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
     pc = pc.crop(bounding_box)
     # o3d.visualization.draw_geometries([pc])
 
