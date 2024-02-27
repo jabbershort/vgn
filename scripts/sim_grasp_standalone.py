@@ -13,17 +13,17 @@ from vgn import vis
 def main():
     grasp_planner = VGN(Path("data/models/vgn_conv.pth"), rviz=False)
 
-    dataset = Dataset(Path('data/datasets/foo'), augment=False)
+    dataset = Dataset(Path('data/datasets/matt'), augment=False)
     i = np.random.randint(len(dataset))
 
-    voxel_grid, (label, rotations, width), index = dataset[i]
+    size, cloud, voxel_grid, (label, rotations, width), index = dataset[i]
     grasp = Grasp(Transform(Rotation.from_quat(rotations[0]), index), width)
-    vis.draw_scene(voxel_grid,grasp,float(label), 40.0 / 6.0)
+    vis.draw_scene(size,cloud,voxel_grid,grasp,float(label), 40.0 / 6.0)
 
     grasps, scores, timings = grasp_planner(voxel_grid,1)  
     print(timings)
     grasp, score = grasps[0], scores[0]
-    vis.draw_scene(voxel_grid,grasp,score,40.0/6.0)
+    vis.draw_scene(size, cloud, voxel_grid,grasp,score,40.0/6.0)
 
 if __name__ == "__main__":
     main()

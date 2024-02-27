@@ -11,50 +11,21 @@ from vgn.io import *
 from vgn.perception import *
 from vgn.simulation import ClutterRemovalSim
 from vgn.utils.transform import Rotation, Transform
+from vgn.vis import generate_grasp
 
 
 OBJECT_COUNT_LAMBDA = 4
 MAX_VIEWPOINT_COUNT = 6
 GRASPS_PER_SCENE = 120
 
-def generate_single(args,sim,finger_depth):
-        # generate heap
-    object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
-    sim.reset(object_count)
-    sim.save_state()
-
-    # render synthetic depth images
-    n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
-    depth_imgs, extrinsics = render_images(sim, n)
-
-    # reconstrct point cloud using a subset of the images
-    tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
-    pc = tsdf.get_cloud()
-
-    # crop surface and borders from point cloud
-    bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
-    pc = pc.crop(bounding_box)
-    # o3d.visualization.draw_geometries([pc])
-
-    if pc.is_empty():
-        print("Point cloud empty, skipping scene")
-        return
-
-    # store the raw data
-    scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
-
-    for _ in range(GRASPS_PER_SCENE):
-        # sample and evaluate a grasp point
-        point, normal = sample_grasp_point(pc, finger_depth)
-        grasp, label = evaluate_grasp_point(sim, point, normal)
-
-        # store the sample
-        write_grasp(args.root, scene_id, grasp, label)
-
 def main(args):
     sim = ClutterRemovalSim(args.scene, args.object_set, gui=args.sim_gui)
     finger_depth = sim.gripper.finger_depth
     pbar = tqdm(total=args.num_grasps)
+
+    if args.sim_gui:
+        vis = o3d.visualization.Visualizer()
+        vis.create_window()
 
     (args.root / "scenes").mkdir(parents=True, exist_ok=True)
     write_setup(
@@ -66,40 +37,60 @@ def main(args):
     )
 
     for _ in range(args.num_grasps // GRASPS_PER_SCENE):
-        generate_single(args,sim,finger_depth)
-        # # generate heap
-        # object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
-        # sim.reset(object_count)
-        # sim.save_state()
+        # generate heap
+        object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+        sim.reset(object_count)
+        sim.save_state()
 
-        # # render synthetic depth images
-        # n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
-        # depth_imgs, extrinsics = render_images(sim, n)
+        # render synthetic depth images
+        n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
+        depth_imgs, extrinsics = render_images(sim, n)
 
-        # # reconstrct point cloud using a subset of the images
-        # tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
-        # pc = tsdf.get_cloud()
+        # reconstrct point cloud using a subset of the images
+        tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
+        pc = tsdf.get_cloud()
 
-        # # crop surface and borders from point cloud
-        # bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
-        # pc = pc.crop(bounding_box)
-        # # o3d.visualization.draw_geometries([pc])
+        # crop surface and borders from point cloud
+        bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
+        pc = pc.crop(bounding_box)
+        # o3d.visualization.draw_geometries([pc])
+        if args.sim_gui:
+            vis.add_geometry(pc)
 
-        # if pc.is_empty():
-        #     print("Point cloud empty, skipping scene")
-        #     continue
+        if pc.is_empty():
+            print("Point cloud empty, skipping scene")
+            continue
 
-        # # store the raw data
-        # scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
+        # store the raw data
+        scene_id = write_sensor_data(args.root, depth_imgs, extrinsics)
+        if args.sim_gui:
+            vis.poll_events()
+            vis.update_renderer()
 
-        # for _ in range(GRASPS_PER_SCENE):
-        #     # sample and evaluate a grasp point
-        #     point, normal = sample_grasp_point(pc, finger_depth)
-        #     grasp, label = evaluate_grasp_point(sim, point, normal)
+        visible_grasps = []
 
-        #     # store the sample
-        #     write_grasp(args.root, scene_id, grasp, label)
+        for _ in range(GRASPS_PER_SCENE):
+            # sample and evaluate a grasp point
+            point, normal = sample_grasp_point(pc, finger_depth)
+            grasp, label = evaluate_grasp_point(sim, point, normal)
+            if label > 0:
+                g = generate_grasp(grasp,label, 40.0 / 6.0,0.1)
+                print(label)
+                visible_grasps.append(g)
+                if args.sim_gui:
+                    vis.add_geometry(g)
+                    vis.poll_events()
+                    vis.update_renderer()
+            # store the sample
+            write_grasp(args.root, scene_id, grasp, label)
+        if args.sim_gui:
+            for g in visible_grasps:
+                vis.remove_geometry(g)
         pbar.update()
+        if args.sim_gui:
+            vis.remove_geometry(pc,True)
+    if args.sim_gui:
+        vis.destroy_window()
 
     pbar.close()
 
@@ -157,6 +148,8 @@ def evaluate_grasp_point(sim, pos, normal, num_rotations=6):
         sim.restore_state()
         candidate = Grasp(Transform(ori, pos), width=sim.gripper.max_opening_width)
         outcome, width = sim.execute_grasp(candidate, remove=False)
+        if outcome == Label.SUCCESS:
+            print("Success")
         outcomes.append(outcome)
         widths.append(width)
 
