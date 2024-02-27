@@ -32,13 +32,14 @@ def draw_scene(size,cloud,tsdf,grasp,grasp_score,finger_depth, voxel_size=1, thr
     if tsdf is not None:
         grid = generate_tsdf(tsdf,voxel_size,threshold)
         geom.append(grid)
-    if cloud is not None:   
+    # if cloud is not None:   
         # TODO: this cloud needs to be scaled by the size / resolution to maycj thr voxek grid of 0-40 in each dimension
-        cloud = cloud.scale(40/size,[0,0,0])
-        cloud.translate([0,0,2])
-        geom.append(cloud)
+        # cloud = cloud.scale(40/size,[0,0,0])
+        # cloud.translate([0,0,2])
+        # geom.append(cloud)
     grip = generate_grasp(grasp,grasp_score,finger_depth)
-    o3d.visualization.draw_geometries([cloud,grid,grip])
+    geom.append(grip)
+    o3d.visualization.draw_geometries(geom)
     
 def generate_tsdf(vol, voxel_size, threshold=0.01):
     vol = vol.squeeze()
@@ -62,8 +63,8 @@ def draw_points(points):
     # msg = _create_vol_msg(vol, voxel_size, threshold)
     # pubs["debug"].publish(msg)
 
-def generate_grasp(grasp,score,finger_depth):
-    p = o3d.geometry.TriangleMesh.create_coordinate_frame(size=10)
+def generate_grasp(grasp,score,finger_depth,coordinate_size=10):
+    p = o3d.geometry.TriangleMesh.create_coordinate_frame(size=coordinate_size)
     p.transform(grasp.pose.as_matrix())
     return p
 

@@ -75,7 +75,7 @@ def main(args):
             grasp, label = evaluate_grasp_point(sim, point, normal)
             if label > 0:
                 g = generate_grasp(grasp,label, 40.0 / 6.0,0.1)
-                print(label)
+                # print(label)
                 visible_grasps.append(g)
                 if args.sim_gui:
                     vis.add_geometry(g)
@@ -83,10 +83,11 @@ def main(args):
                     vis.update_renderer()
             # store the sample
             write_grasp(args.root, scene_id, grasp, label)
+            pbar.update()
+
         if args.sim_gui:
             for g in visible_grasps:
                 vis.remove_geometry(g)
-        pbar.update()
         if args.sim_gui:
             vis.remove_geometry(pc,True)
     if args.sim_gui:
@@ -148,8 +149,8 @@ def evaluate_grasp_point(sim, pos, normal, num_rotations=6):
         sim.restore_state()
         candidate = Grasp(Transform(ori, pos), width=sim.gripper.max_opening_width)
         outcome, width = sim.execute_grasp(candidate, remove=False)
-        if outcome == Label.SUCCESS:
-            print("Success")
+        # if outcome == Label.SUCCESS:
+        #     print("Success")
         outcomes.append(outcome)
         widths.append(width)
 

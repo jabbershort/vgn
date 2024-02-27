@@ -4,16 +4,16 @@ import os
 
 import numpy as np
 
-from vgn.detection import VGN_Alt as VGN
+from vgn.detection import VGN_NO_ROS as VGN
 from vgn.dataset import Dataset
 from vgn.grasp import Grasp
 from vgn.utils.transform import Rotation, Transform
 from vgn import vis
 
 def main():
-    grasp_planner = VGN(Path("data/models/vgn_conv.pth"), rviz=False)
+    grasp_planner = VGN(Path("data/models/vgn_conv.pth"))
 
-    dataset = Dataset(Path('data/datasets/matt'), augment=False)
+    dataset = Dataset(Path('data/datasets/foo'), augment=False)
     i = np.random.randint(len(dataset))
 
     size, cloud, voxel_grid, (label, rotations, width), index = dataset[i]

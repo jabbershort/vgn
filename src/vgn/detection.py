@@ -10,11 +10,10 @@ from vgn.utils.transform import Transform, Rotation
 from vgn.networks import load_network
 
 
-class VGN_Alt(object):
-    def __init__(self, model_path, rviz=False):
+class VGN_NO_ROS(object):
+    def __init__(self, model_path):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.net = load_network(model_path, self.device)
-        self.rviz = rviz
 
     def __call__(self, tsdf_vol, voxel_size):
 
@@ -33,7 +32,7 @@ class VGN_Alt(object):
 
         return grasps, scores, toc
 
-class VGN(object):
+class VGN_ROS(object):
     def __init__(self, model_path, rviz=False):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.net = load_network(model_path, self.device)
