@@ -19,7 +19,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset",default='data/datasets/foo' ,type=Path)
+    parser.add_argument("--dataset",default='data/datasets/minimass' ,type=Path)
     parser.add_argument("--augment", action="store_true")
     args = parser.parse_args()
     main(args)

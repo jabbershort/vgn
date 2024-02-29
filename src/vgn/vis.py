@@ -32,11 +32,12 @@ def draw_scene(size,cloud,tsdf,grasp,grasp_score,finger_depth, voxel_size=1, thr
     if tsdf is not None:
         grid = generate_tsdf(tsdf,voxel_size,threshold)
         geom.append(grid)
-    # if cloud is not None:   
+    if cloud is not None:   
         # TODO: this cloud needs to be scaled by the size / resolution to maycj thr voxek grid of 0-40 in each dimension
-        # cloud = cloud.scale(40/size,[0,0,0])
-        # cloud.translate([0,0,2])
-        # geom.append(cloud)
+        cloud = cloud.scale(40/size,[0,0,0])
+        cloud.translate([0,0,2])
+        cloud.compute_vertex_normals()
+        geom.append(cloud)
     grip = generate_grasp(grasp,grasp_score,finger_depth)
     geom.append(grip)
     o3d.visualization.draw_geometries(geom)
