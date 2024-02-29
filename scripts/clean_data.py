@@ -24,19 +24,19 @@ def main(root):
     scene_id, grasp, label = read_grasp(df, i)
     depth_imgs, extrinsics = read_sensor_data(root, scene_id)
 
-    tsdf = create_tsdf(size, 40, depth_imgs, intrinsic, extrinsics)
-    tsdf_grid = tsdf.get_grid()
-    cloud = tsdf.get_cloud()
+    # tsdf = create_tsdf(size, 40, depth_imgs, intrinsic, extrinsics)
+    # tsdf_grid = tsdf.get_grid()
+    # cloud = tsdf.get_cloud()
 
-    geom = []
-    grid = vis.generate_tsdf(tsdf_grid,1)
-    geom.append(grid)
-    cloud = cloud.scale(40/size,[0,0,0])
-    cloud.translate([0,0,2])
-    geom.append(cloud)
-    grip = vis.generate_grasp(grasp,label,finger_depth)
-    geom.append(grip)
-    o3d.visualization.draw_geometries(geom)
+    # geom = []
+    # grid = vis.generate_tsdf(tsdf_grid,1)
+    # geom.append(grid)
+    # cloud = cloud.scale(40/size,[0,0,0])
+    # cloud.translate([0,0,2])
+    # geom.append(cloud)
+    # grip = vis.generate_grasp(grasp,label,finger_depth)
+    # geom.append(grip)
+    # o3d.visualization.draw_geometries(geom)
 
     angles = np.empty(len(positives.index))
     for i, index in enumerate(positives.index):

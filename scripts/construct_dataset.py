@@ -29,6 +29,15 @@ def main(args):
     df["z"] /= voxel_size
     df["width"] /= voxel_size
     df = df.rename(columns={"x": "i", "y": "j", "z": "k"})
+
+    # Skim off results outside of voxel grid.
+    df.drop(df[df["i"] > 39].index,inplace=True)
+    df.drop(df[df["i"] < 0].index,inplace=True)
+    df.drop(df[df["j"] > 39].index,inplace=True)
+    df.drop(df[df["j"] < 0].index,inplace=True)
+    df.drop(df[df["k"] > 39].index,inplace=True)
+    df.drop(df[df["k"] < 0].index,inplace=True)
+    
     write_df(df, args.dataset)
 
     # create tsdfs
