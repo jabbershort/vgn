@@ -16,7 +16,7 @@ class Dataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.df.index)
 
-    def __getitem__(self, i):
+    def get_item(self, i):
         scene_id = self.df.loc[i, "scene_id"]
         size, _, _, _ = read_setup(self.root)
         ori = Rotation.from_quat(self.df.loc[i, "qx":"qw"].to_numpy(np.single))
@@ -37,6 +37,29 @@ class Dataset(torch.utils.data.Dataset):
         scene, x, y, index = cloud, voxel_grid, (label, rotations, width), index
 
         return size, scene, x, y, index
+
+
+    def __getitem__(self, i):
+        scene_id = self.df.loc[i, "scene_id"]
+        size, _, _, _ = read_setup(self.root)
+        ori = Rotation.from_quat(self.df.loc[i, "qx":"qw"].to_numpy(np.single))
+        pos = self.df.loc[i, "i":"k"].to_numpy(np.single)
+        width = self.df.loc[i, "width"].astype(np.single)
+        label = self.df.loc[i, "label"].astype(np.longlong)
+        voxel_grid = read_voxel_grid(self.root, scene_id)
+        cloud = read_cloud(self.root,scene_id)
+        if self.augment:
+            voxel_grid, ori, pos = apply_transform(voxel_grid, ori, pos)
+
+        index = np.round(pos).astype(np.longlong)
+        rotations = np.empty((2, 4), dtype=np.single)
+        R = Rotation.from_rotvec(np.pi * np.r_[0.0, 0.0, 1.0])
+        rotations[0] = ori.as_quat()
+        rotations[1] = (ori * R).as_quat()
+
+        scene, x, y, index = cloud, voxel_grid, (label, rotations, width), index
+
+        return x, y, index
 
 
 def apply_transform(voxel_grid, orientation, position):
