@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def main(root):
-    root = Path('data/raw/foo')
+#    root = Path('data/raw/foo')
     df = read_df(root)
 
     positives = df[df["label"] == 1]

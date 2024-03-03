@@ -23,4 +23,4 @@
 
 # Train
 
-### TBC
+- `python scripts/train_vgn.py --dataset data/raw/foo`

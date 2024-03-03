@@ -14,7 +14,7 @@ from vgn.utils.transform import Rotation, Transform
 from vgn.vis import generate_grasp
 
 
-OBJECT_COUNT_LAMBDA = 4
+OBJECT_COUNT_LAMBDA = 2
 MAX_VIEWPOINT_COUNT = 6
 GRASPS_PER_SCENE = 120
 
