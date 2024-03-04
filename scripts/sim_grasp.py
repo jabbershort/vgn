@@ -1,49 +1,38 @@
 import argparse
 from pathlib import Path
+import os
 
-from vgn.detection import VGN
-from vgn.experiments import clutter_removal
+import numpy as np
 
+from vgn.detection import VGN_NO_ROS as VGN
+from vgn.dataset import Dataset
+from vgn.grasp import Grasp
+from vgn.utils.transform import Rotation, Transform
+from vgn import vis
 
 def main(args):
+    grasp_planner = VGN(Path(args.model))
 
-    # if args.rviz or str(args.model) == "gpd":
-    #     import rospy
+    dataset = Dataset(Path(args.dataset), augment=False)
+    for i in range(args.count):
+        i = np.random.randint(len(dataset))
 
-    #     rospy.init_node("sim_grasp", anonymous=True)
+        size, cloud, voxel_grid, (label, rotations, width), index = dataset.get_item(i)
+        grasp = Grasp(Transform(Rotation.from_quat(rotations[0]), index), width)
 
-    if str(args.model) == "gpd":
-        from vgn.baselines import GPD
-
-        grasp_planner = GPD()
-    else:
-        grasp_planner = VGN(args.model, rviz=args.rviz)
-
-    clutter_removal.run(
-        grasp_plan_fn=grasp_planner,
-        logdir=args.logdir,
-        description=args.description,
-        scene=args.scene,
-        object_set=args.object_set,
-        num_objects=args.num_objects,
-        num_rounds=args.num_rounds,
-        seed=args.seed,
-        sim_gui=args.sim_gui,
-        rviz=args.rviz,
-    )
-
+        grasps, scores, timings = grasp_planner(voxel_grid,1)  
+        if len(grasps) != 0:
+            print(timings)
+            grasp, score = grasps[0], scores[0]
+            # tODO: parmaterise functions
+            vis.draw_scene(size, cloud, voxel_grid,grasp,score,40.0/6.0)
+        else:
+            print('No grasps found')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="data/models/vgn_conv.pth" type=Path, required=True)
-    parser.add_argument("--logdir", type=Path, default="data/experiments")
-    parser.add_argument("--description", type=str, default="")
-    parser.add_argument("--scene", type=str, choices=["pile", "packed"], default="pile")
-    parser.add_argument("--object-set", type=str, default="blocks")
-    parser.add_argument("--num-objects", type=int, default=5)
-    parser.add_argument("--num-rounds", type=int, default=100)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--sim-gui", action="store_true")
-    parser.add_argument("--rviz", action="store_true")
+    parser.add_argument('--model',default='data/models/vgn_conv.pth')
+    parser.add_argument('--dataset',default='data/datasets/minimass')
+    parser.add_argument('--count',default=10)
     args = parser.parse_args()
     main(args)

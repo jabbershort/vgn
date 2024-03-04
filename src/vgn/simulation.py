@@ -8,7 +8,7 @@ from vgn.grasp import Label
 from vgn.perception import *
 from vgn.utils import btsim, workspace_lines
 from vgn.utils.transform import Rotation, Transform
-
+from vgn.parameters import *
 
 class ClutterRemovalSim(object):
     def __init__(self, scene, object_set, gui=True, seed=None):
@@ -140,6 +140,7 @@ class ClutterRemovalSim(object):
 
         If N is given, the first n viewpoints on a circular trajectory consisting of N points are rendered.
         """
+        # tODO: parmaterise functions
         tsdf = TSDFVolume(self.size, 40)
         high_res_tsdf = TSDFVolume(self.size, 120)
 
@@ -246,8 +247,8 @@ class Gripper(object):
         self.world = world
         self.urdf_path = Path("data/urdfs/panda/hand.urdf")
 
-        self.max_opening_width = 0.08
-        self.finger_depth = 0.05
+        self.max_opening_width = GripperParameters.gripper_width
+        self.finger_depth = GripperParameters.finger_depth
         self.T_body_tcp = Transform(Rotation.identity(), [0.0, 0.0, 0.022])
         self.T_tcp_body = self.T_body_tcp.inverse()
 

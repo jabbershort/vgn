@@ -12,11 +12,7 @@ from vgn.perception import *
 from vgn.simulation import ClutterRemovalSim
 from vgn.utils.transform import Rotation, Transform
 from vgn.vis import generate_grasp
-
-
-OBJECT_COUNT_LAMBDA = 2
-MAX_VIEWPOINT_COUNT = 6
-GRASPS_PER_SCENE = 120
+from vgn.parameters import *
 
 def main(args):
     sim = ClutterRemovalSim(args.scene, args.object_set, gui=args.sim_gui)
@@ -36,14 +32,14 @@ def main(args):
         sim.gripper.finger_depth,
     )
 
-    for _ in range(args.num_grasps // GRASPS_PER_SCENE):
+    for _ in range(args.num_grasps // DataGenerationParameters.grasps_per_scene):
         # generate heap
-        object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+        object_count = np.random.poisson(DataGenerationParameters.num_objects) + 1
         sim.reset(object_count)
         sim.save_state()
 
         # render synthetic depth images
-        n = np.random.randint(MAX_VIEWPOINT_COUNT) + 1
+        n = np.random.randint(DataGenerationParameters.max_viewports) + 1
         depth_imgs, extrinsics = render_images(sim, n)
 
         # reconstrct point cloud using a subset of the images
@@ -69,13 +65,13 @@ def main(args):
 
         visible_grasps = []
 
-        for _ in range(GRASPS_PER_SCENE):
+        for _ in range(DataGenerationParameters.grasps_per_scene):
             # sample and evaluate a grasp point
             point, normal = sample_grasp_point(pc, finger_depth)
             grasp, label = evaluate_grasp_point(sim, point, normal)
             if label > 0:
+                # TODO: parameterise numbers
                 g = generate_grasp(grasp,label, 40.0 / 6.0,0.1)
-                # print(label)
                 visible_grasps.append(g)
                 if args.sim_gui:
                     vis.add_geometry(g)
@@ -120,7 +116,7 @@ def render_images(sim, n):
 def sample_grasp_point(point_cloud, finger_depth, eps=0.1):
     points = np.asarray(point_cloud.points)
     normals = np.asarray(point_cloud.normals)
-    angle_threshold = 0.2
+    angle_threshold = DataGenerationParameters.normal_threshold
     ok = False
     while not ok:
         # TODO this could result in an infinite loop, though very unlikely

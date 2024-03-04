@@ -108,6 +108,7 @@ class TSDFVolume(object):
         cloud = self._volume.extract_voxel_point_cloud()
         points = np.asarray(cloud.points)
         distances = np.asarray(cloud.colors)[:, [0]]
+        # tODO: parmaterise functions
         grid = np.zeros((1, 40, 40, 40), dtype=np.float32)
         for idx, point in enumerate(points):
             i, j, k = np.floor(point / self.voxel_size).astype(int)

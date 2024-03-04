@@ -33,7 +33,7 @@ def draw_scene(size,cloud,tsdf,grasp,grasp_score,finger_depth, voxel_size=1, thr
         grid = generate_tsdf(tsdf,voxel_size,threshold)
         geom.append(grid)
     if cloud is not None:   
-        # TODO: this cloud needs to be scaled by the size / resolution to maycj thr voxek grid of 0-40 in each dimension
+        # tODO: parmaterise functions
         cloud = cloud.scale(40/size,[0,0,0])
         cloud.translate([0,0,2])
         cloud.compute_vertex_normals()
@@ -109,86 +109,4 @@ def draw_grasp(grasp, score, finger_depth):
     # pubs["grasp"].publish(MarkerArray(markers=markers))
 
 
-def draw_grasps(grasps, scores, finger_depth):
-    markers = []
-    # for i, (grasp, score) in enumerate(zip(grasps, scores)):
-        # msg = _create_grasp_marker_msg(grasp, score, finger_depth)
-        # msg.id = i
-        # markers.append(msg)
-    # msg = MarkerArray(markers=markers)
-    # pubs["grasps"].publish(msg)
 
-
-# def clear():
-#     pubs["workspace"].publish(DELETE_MARKER_MSG)
-#     pubs["tsdf"].publish(ros_utils.to_cloud_msg(np.array([]), frame="task"))
-#     pubs["points"].publish(ros_utils.to_cloud_msg(np.array([]), frame="task"))
-#     clear_quality()
-#     pubs["grasp"].publish(DELETE_MARKER_ARRAY_MSG)
-#     clear_grasps()
-#     pubs["debug"].publish(ros_utils.to_cloud_msg(np.array([]), frame="task"))
-
-
-# def clear_quality():
-#     pubs["quality"].publish(ros_utils.to_cloud_msg(np.array([]), frame="task"))
-
-
-# def clear_grasps():
-#     pubs["grasps"].publish(DELETE_MARKER_ARRAY_MSG)
-
-
-# def _create_publishers():
-#     pubs = dict()
-#     pubs["workspace"] = Publisher("/workspace", Marker, queue_size=1, latch=True)
-#     pubs["tsdf"] = Publisher("/tsdf", PointCloud2, queue_size=1, latch=True)
-#     pubs["points"] = Publisher("/points", PointCloud2, queue_size=1, latch=True)
-#     pubs["quality"] = Publisher("/quality", PointCloud2, queue_size=1, latch=True)
-#     pubs["grasp"] = Publisher("/grasp", MarkerArray, queue_size=1, latch=True)
-#     pubs["grasps"] = Publisher("/grasps", MarkerArray, queue_size=1, latch=True)
-#     pubs["debug"] = Publisher("/debug", PointCloud2, queue_size=1, latch=True)
-#     return pubs
-
-
-# def _create_marker_msg(marker_type, frame, pose, scale, color):
-#     msg = Marker()
-#     msg.header.frame_id = frame
-#     msg.header.stamp = rospy.Time()
-#     msg.type = marker_type
-#     msg.action = Marker.ADD
-#     msg.pose = ros_utils.to_pose_msg(pose)
-#     msg.scale = ros_utils.to_vector3_msg(scale)
-#     msg.color = ros_utils.to_color_msg(color)
-#     return msg
-
-
-# def _create_vol_msg(vol, voxel_size, threshold):
-#     vol = vol.squeeze()
-#     points = np.argwhere(vol > threshold) * voxel_size
-#     values = np.expand_dims(vol[vol > threshold], 1)
-#     return ros_utils.to_cloud_msg(points, values, frame="task")
-
-
-# def _create_grasp_marker_msg(grasp, score, finger_depth):
-#     radius = 0.1 * finger_depth
-#     w, d = grasp.width, finger_depth
-#     scale = [radius, 0.0, 0.0]
-#     color = cmap(float(score))
-#     msg = _create_marker_msg(Marker.LINE_LIST, "task", grasp.pose, scale, color)
-#     msg.points = [ros_utils.to_point_msg(point) for point in _gripper_lines(w, d)]
-#     return msg
-
-
-# def _gripper_lines(width, depth):
-#     return [
-#         [0.0, 0.0, -depth / 2.0],
-#         [0.0, 0.0, 0.0],
-#         [0.0, -width / 2.0, 0.0],
-#         [0.0, -width / 2.0, depth],
-#         [0.0, width / 2.0, 0.0],
-#         [0.0, width / 2.0, depth],
-#         [0.0, -width / 2.0, 0.0],
-#         [0.0, width / 2.0, 0.0],
-#     ]
-
-
-# pubs = _create_publishers()

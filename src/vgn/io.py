@@ -90,6 +90,7 @@ def read_voxel_grid(root, scene_id):
 def read_cloud(root,scene_id):
     size, intrinsic, _, _ = read_setup(root)
     depth_imgs, extrinsics = read_sensor_data(root, scene_id)
+    # tODO: parmaterise functions
     tsdf = create_tsdf(size,40,depth_imgs,intrinsic,extrinsics)
     return tsdf.get_mesh()
 

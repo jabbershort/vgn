@@ -62,6 +62,7 @@ class VGN_ROS(object):
 
 
 def predict(tsdf_vol, net, device):
+    # tODO: parmaterise functions
     assert tsdf_vol.shape == (1, 40, 40, 40)
 
     # move input to the GPU

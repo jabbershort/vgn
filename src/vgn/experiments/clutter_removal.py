@@ -28,8 +28,7 @@ def run(
     N=None,
     num_rounds=40,
     seed=1,
-    sim_gui=False,
-    rviz=False,
+    sim_gui=False
 ):
     """Run several rounds of simulated clutter removal experiments.
 
@@ -58,12 +57,6 @@ def run(
             if pc.is_empty():
                 break  # empty point cloud, abort this round TODO this should not happen
 
-            # visualize scene
-            if rviz:
-                vis.clear()
-                vis.draw_workspace(sim.size)
-                vis.draw_tsdf(tsdf.get_grid().squeeze(), tsdf.voxel_size)
-                vis.draw_points(np.asarray(pc.points))
 
             # plan grasps
             state = State(tsdf, pc)
@@ -72,13 +65,8 @@ def run(
             if len(grasps) == 0:
                 break  # no detections found, abort this round
 
-            if rviz:
-                vis.draw_grasps(grasps, scores, sim.gripper.finger_depth)
-
             # execute grasp
             grasp, score = grasps[0], scores[0]
-            if rviz:
-                vis.draw_grasp(grasp, score, sim.gripper.finger_depth)
             label, _ = sim.execute_grasp(grasp, allow_contact=True)
 
             # log the grasp
