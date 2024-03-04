@@ -120,12 +120,13 @@ def render_images(sim, n):
 def sample_grasp_point(point_cloud, finger_depth, eps=0.1):
     points = np.asarray(point_cloud.points)
     normals = np.asarray(point_cloud.normals)
+    angle_threshold = 0.2
     ok = False
     while not ok:
         # TODO this could result in an infinite loop, though very unlikely
         idx = np.random.randint(len(points))
         point, normal = points[idx], normals[idx]
-        ok = normal[2] > -0.1  # make sure the normal is poitning upwards
+        ok = np.abs(normal[0]) < angle_threshold and np.abs(normal[1]) < angle_threshold # make sure the normal is poitning upwards
     grasp_depth = np.random.uniform(-eps * finger_depth, (1.0 + eps) * finger_depth)
     point = point + normal * grasp_depth
     return point, normal
