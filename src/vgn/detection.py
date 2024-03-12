@@ -15,7 +15,7 @@ class VGN_NO_ROS(object):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.net = load_network(model_path, self.device)
 
-    def __call__(self, tsdf_vol, voxel_size):
+    def __call__(self, tsdf_vol, voxel_size, n_results=3):
 
         tic = time.time()
         qual_vol, rot_vol, width_vol = predict(tsdf_vol, self.net, self.device)
@@ -30,7 +30,13 @@ class VGN_NO_ROS(object):
             grasps = [from_voxel_coordinates(g, voxel_size) for g in grasps[p]]
             scores = scores[p]
 
-        return grasps, scores, toc
+        top_n = 2
+        sorted_scores = np.argsort(scores)[::-1][:top_n]
+        grasps = np.array(grasps)
+        top_grasps= list(grasps[sorted_scores])
+        top_scores = list(scores[sorted_scores])   
+
+        return top_grasps, top_scores, toc
 
 class VGN_ROS(object):
     def __init__(self, model_path, rviz=False):
@@ -51,6 +57,7 @@ class VGN_ROS(object):
         grasps, scores = np.asarray(grasps), np.asarray(scores)
 
         if len(grasps) > 0:
+            # TODO: why random permutation, surely specify num grasps
             p = np.random.permutation(len(grasps))
             grasps = [from_voxel_coordinates(g, voxel_size) for g in grasps[p]]
             scores = scores[p]

@@ -23,9 +23,7 @@ def main(args):
         grasps, scores, timings = grasp_planner(voxel_grid,1)  
         if len(grasps) != 0:
             print(timings)
-            grasp, score = grasps[0], scores[0]
-            # tODO: parmaterise functions
-            vis.draw_scene(size, cloud, voxel_grid,grasp,score,40.0/6.0)
+            vis.draw_scene(size, cloud, voxel_grid,grasps,voxel_size = size/40)
         else:
             print('No grasps found')
 

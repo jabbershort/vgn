@@ -16,7 +16,7 @@ def main(args):
     size, cloud, voxel_grid, (label, rotations, width), index = dataset.get_item(i)
     grasp = Grasp(Transform(Rotation.from_quat(rotations[0]), index), width)
     # TODO: parameterise finger size
-    vis.draw_scene(size,cloud,voxel_grid,grasp,float(label), 40.0 / 6.0)
+    vis.draw_scene(size,cloud,voxel_grid,grasp)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
