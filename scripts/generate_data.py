@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 import scipy.signal as signal
+import random
 from tqdm import tqdm
 
 from vgn.grasp import Grasp, Label
@@ -34,7 +35,7 @@ def main(args):
 
     for _ in range(args.num_grasps // DataGenerationParameters.grasps_per_scene):
         # generate heap
-        object_count = np.random.poisson(DataGenerationParameters.num_objects) + 1
+        object_count = random.randrange(1,DataGenerationParameters.max_objects)
         sim.reset(object_count)
         sim.save_state()
 
@@ -43,13 +44,13 @@ def main(args):
         depth_imgs, extrinsics = render_images(sim, n)
 
         # reconstrct point cloud using a subset of the images
-        tsdf = create_tsdf(sim.size, 120, depth_imgs, sim.camera.intrinsic, extrinsics)
+        tsdf = create_tsdf(sim.size, DataGenerationParameters.resolution, depth_imgs, sim.camera.intrinsic, extrinsics)
         pc = tsdf.get_cloud()
 
         # crop surface and borders from point cloud
         bounding_box = o3d.geometry.AxisAlignedBoundingBox(sim.lower, sim.upper)
         pc = pc.crop(bounding_box)
-        # o3d.visualization.draw_geometries([pc])
+        
         if args.sim_gui:
             vis.add_geometry(pc)
 
@@ -71,7 +72,7 @@ def main(args):
             grasp, label = evaluate_grasp_point(sim, point, normal)
             if label > 0:
                 # TODO: parameterise numbers
-                g = generate_grasp(grasp,label, 40.0 / 6.0,0.1)
+                g = generate_grasp(grasp,sim.size/DataGenerationParameters.resolution,0.1,scale=False)
                 visible_grasps.append(g)
                 if args.sim_gui:
                     vis.add_geometry(g)
@@ -84,7 +85,6 @@ def main(args):
         if args.sim_gui:
             for g in visible_grasps:
                 vis.remove_geometry(g)
-        if args.sim_gui:
             vis.remove_geometry(pc,True)
     if args.sim_gui:
         vis.destroy_window()

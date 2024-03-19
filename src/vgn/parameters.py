@@ -1,8 +1,10 @@
 class DataGenerationParameters:
     normal_threshold = 0.4
-    num_objects = 2
+    max_objects = 6
     max_viewports = 6
     grasps_per_scene = 120
+    friction = 0.75
+    resolution = 120
 
 class NetworkParameters:
     resolution = 40

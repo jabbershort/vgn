@@ -46,9 +46,10 @@ def draw_points(points):
     cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(points))
     o3d.visualization.draw_geometries([cloud])
 
-def generate_grasp(grasp,voxel_size,coordinate_size=10):
+def generate_grasp(grasp,voxel_size,coordinate_size=10,scale=True):
     p = o3d.geometry.TriangleMesh.create_coordinate_frame(size=coordinate_size)
     p.transform(grasp.pose.as_matrix())
-    p.scale(voxel_size,center=[0,0,0])
+    if scale:
+        p.scale(voxel_size,center=[0,0,0])
     return p
 

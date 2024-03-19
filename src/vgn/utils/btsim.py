@@ -4,7 +4,7 @@ import numpy as np
 import pybullet
 from pybullet_utils import bullet_client
 
-
+from vgn.parameters import DataGenerationParameters
 from vgn.utils.transform import Rotation, Transform
 
 assert pybullet.isNumpyEnabled(), "Pybullet needs to be built with NumPy"
@@ -119,6 +119,7 @@ class Body(object):
             pose.rotation.as_quat(),
             globalScaling=scale,
         )
+        physics_client.changeDynamics(body_uid,-1,lateralFriction=DataGenerationParameters.friction)
         return cls(physics_client, body_uid)
 
     def get_pose(self):
